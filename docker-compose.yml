@@ -1,0 +1,49 @@
+
+version: "3.8"
+
+services:
+  biblioteca_app:
+    image: ${IMAGE_TAG}
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: biblioteca_db
+      DB_USER: biblioteca_app
+      DB_PASSWORD_FILE: /run/secrets/pg_password
+
+    secrets:
+      - pg_password
+
+    ports:
+      - target: 5000
+        published: 5007
+        protocol: tcp
+        mode: host
+
+    networks:
+      - red_biblioteca
+
+    deploy:
+      replicas: 1
+
+      placement:
+        constraints:
+          - node.role == manager
+
+      restart_policy:
+        condition: on-failure
+
+      update_config:
+        parallelism: 1
+        order: stop-first
+
+networks:
+  red_biblioteca:
+    external: true
+    name: examen_red_examen
+
+secrets:
+  pg_password:
+    external: true
+    name: biblioteca_pg_password
