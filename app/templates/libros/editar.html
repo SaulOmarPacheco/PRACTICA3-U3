@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('libros.index') }}" class="text-decoration-none">&larr; Volver al catálogo</a>
+    <h1 class="h2 mt-3 mb-1">Editar libro</h1>
+    <p class="text-secondary mb-0">Actualiza los datos del libro seleccionado.</p>
+</div>
+
+{% if mensaje %}
+    <div class="alert alert-{{ categoria }}" role="alert">{{ mensaje }}</div>
+{% endif %}
+
+<div class="card shadow-sm" style="max-width: 640px;">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('libros.editar', id_libro=libro.id_libro) }}">
+            <div class="mb-3">
+                <label for="titulo" class="form-label">Título</label>
+                <input type="text" class="form-control" id="titulo" name="titulo"
+                       maxlength="150" value="{{ formulario.titulo }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="autor" class="form-label">Autor</label>
+                <input type="text" class="form-control" id="autor" name="autor"
+                       maxlength="100" value="{{ formulario.autor }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="isbn" class="form-label">ISBN <span class="text-secondary">(opcional)</span></label>
+                <input type="text" class="form-control" id="isbn" name="isbn" maxlength="20"
+                       value="{{ formulario.isbn }}">
+            </div>
+            <div class="mb-4">
+                <label for="disponible" class="form-label">Disponibilidad</label>
+                <select class="form-select" id="disponible" name="disponible" required>
+                    <option value="true" {% if formulario.disponible == "true" %}selected{% endif %}>Disponible</option>
+                    <option value="false" {% if formulario.disponible == "false" %}selected{% endif %}>Prestado</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a href="{{ url_for('libros.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
