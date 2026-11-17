@@ -1,5 +1,7 @@
 
-name: PRACTICA3-U3 - Docker CI/CD
+name: PRACTICA3-U3 - CI y Versionado
+
+run-name: ${{ github.event.pull_request.title }}
 
 on:
   pull_request:
@@ -9,14 +11,12 @@ on:
       - opened
       - synchronize
       - reopened
-      - edited
       - closed
 
 permissions:
   contents: read
 
 jobs:
-
   verificar:
     name: Verificar Docker
     if: github.event.action != 'closed'
@@ -29,15 +29,15 @@ jobs:
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Verificar construccion Docker
+      - name: Verificar imagen Docker
         uses: docker/build-push-action@v6
         with:
           context: .
           push: false
           tags: practica3-u3:test
 
-  publicar:
-    name: Publicar Docker Hub
+  crear_tag:
+    name: Crear tag de version
     if: >-
       github.event.action == 'closed' &&
       github.event.pull_request.merged == true &&
@@ -45,47 +45,44 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-      - name: Descargar codigo de main
+      - name: Descargar codigo integrado
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
 
-      - name: Obtener version del Pull Request
+      - name: Obtener y validar version
         id: version
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         shell: bash
         run: |
-          if [[ "$PR_TITLE" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)([[:space:]]|$) ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "Version detectada: $VERSION"
+          if [[ "$PR_TITLE" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+)([[:space:]]|$) ]]; then
+            TAG="${BASH_REMATCH[1]}"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           else
-            echo "ERROR: titulo invalido."
-            echo "Ejemplo: v1.0.0 - Modulo Libros"
+            echo "Error: usa v1.0.0 - Descripcion"
             exit 1
           fi
 
-      - name: Configurar Docker Buildx
-        uses: docker/setup-buildx-action@v3
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Error: el tag $TAG ya existe"
+            exit 1
+          fi
 
-      - name: Iniciar sesion en Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Construir y publicar imagen
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/practica3-u3:${{ steps.version.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/practica3-u3:latest
-
-      - name: Confirmar publicacion
+      - name: Crear y publicar tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          echo "Imagen publicada correctamente"
-          echo "Version: ${{ steps.version.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Resumen
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          echo "### Tag creado: $TAG" >> "$GITHUB_STEP_SUMMARY"

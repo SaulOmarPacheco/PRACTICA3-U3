@@ -11,7 +11,23 @@ load_dotenv()
 app =  Flask(__name__)
 
 # Configuración de la base de datos PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+from urllib.parse import quote
+
+database_url = os.getenv("DATABASE_URL")
+
+if os.getenv("DB_HOST"):
+    with open(os.environ["DB_PASSWORD_FILE"]) as f:
+        password = quote(f.read().strip(), safe="")
+
+    database_url = (
+        f"postgresql+psycopg://{os.getenv('DB_USER')}:{password}"
+        f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '5432')}"
+        f"/{os.getenv('DB_NAME')}"
+    )
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
