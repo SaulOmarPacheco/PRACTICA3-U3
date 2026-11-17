@@ -16,10 +16,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Registrar Blueprint del Home
+# Registrar blueprints
 from app.routes.home import home_bp
+from app.routes.libros import libros_bp
 
 app.register_blueprint(home_bp)
+app.register_blueprint(libros_bp)
 
 with app.app_context():
     try:
