@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('lectores.index') }}" class="text-decoration-none">&larr; Volver a lectores</a>
+    <h1 class="h2 mt-3 mb-1">Editar lector</h1>
+    <p class="text-secondary mb-0">Actualiza los datos del lector seleccionado.</p>
+</div>
+
+{% if mensaje %}
+    <div class="alert alert-{{ categoria }}" role="alert">{{ mensaje }}</div>
+{% endif %}
+
+<div class="card shadow-sm" style="max-width: 640px;">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('lectores.editar', id_lector=lector.id_lector) }}">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre"
+                       maxlength="100" value="{{ formulario.nombre }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <input type="email" class="form-control" id="correo" name="correo"
+                       maxlength="120" value="{{ formulario.correo }}" required>
+            </div>
+            <div class="mb-4">
+                <label for="telefono" class="form-label">Teléfono <span class="text-secondary">(opcional)</span></label>
+                <input type="text" class="form-control" id="telefono" name="telefono"
+                       maxlength="20" value="{{ formulario.telefono }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a href="{{ url_for('lectores.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

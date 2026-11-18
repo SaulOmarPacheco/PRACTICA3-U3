@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h2 mb-1">Gestión de lectores</h1>
+        <p class="text-secondary mb-0">Agrega, consulta y administra los lectores.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-primary">{{ lectores|length }} lectores</span>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                data-bs-target="#agregarLectorModal">
+            Agregar lector
+        </button>
+    </div>
+</div>
+
+{% if mensaje %}
+    <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
+        {{ mensaje }}
+    </div>
+{% endif %}
+
+<section class="card shadow-sm" aria-labelledby="listado-lectores">
+    <div class="card-body">
+        <h2 class="h5 card-title mb-3" id="listado-lectores">Lectores registrados</h2>
+        {% if lectores %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lector in lectores %}
+                    <tr>
+                        <td class="fw-semibold">{{ lector.nombre }}</td>
+                        <td>{{ lector.correo }}</td>
+                        <td>{{ lector.telefono or "—" }}</td>
+                        <td>
+                            {% if lector.activo %}
+                            <span class="badge text-bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge text-bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ url_for('lectores.editar', id_lector=lector.id_lector) }}">Editar</a>
+                            <form class="d-inline" method="post"
+                                  action="{{ url_for('lectores.cambiar_estado', id_lector=lector.id_lector) }}">
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">
+                                    {% if lector.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            <form class="d-inline" method="post"
+                                  action="{{ url_for('lectores.eliminar', id_lector=lector.id_lector) }}">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-secondary mb-0">Todavía no hay lectores registrados.</p>
+        {% endif %}
+    </div>
+</section>
+
+<div class="modal fade" id="agregarLectorModal" tabindex="-1"
+     aria-labelledby="agregarLectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('lectores.index') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="agregarLectorModalLabel">Agregar lector</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre"
+                               maxlength="100" value="{{ formulario.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="correo" class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="correo" name="correo"
+                               maxlength="120" value="{{ formulario.correo }}" required>
+                    </div>
+                    <div>
+                        <label for="telefono" class="form-label">Teléfono <span class="text-secondary">(opcional)</span></label>
+                        <input type="text" class="form-control" id="telefono" name="telefono"
+                               maxlength="20" value="{{ formulario.telefono }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar lector</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if abrir_modal %}
+<script>
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("agregarLectorModal")).show();
+</script>
+{% endif %}
+{% endblock %}
