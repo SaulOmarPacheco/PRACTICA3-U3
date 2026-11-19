@@ -1,0 +1,211 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Gestión de Préstamos</h2>
+        <p class="text-muted mb-0">
+            Registro y control de préstamos de BiblioTech
+        </p>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+<!-- REGISTRAR PRÉSTAMO -->
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Registrar nuevo préstamo</h5>
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST"
+              action="{{ url_for('prestamos.registrar') }}">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Libro disponible
+                    </label>
+
+                    <select name="id_libro"
+                            class="form-select"
+                            required>
+
+                        <option value="">Seleccionar libro</option>
+
+                        {% for libro in libros %}
+                        <option value="{{ libro.id_libro }}">
+                            {{ libro.titulo }} - {{ libro.autor }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Lector activo
+                    </label>
+
+                    <select name="id_lector"
+                            class="form-select"
+                            required>
+
+                        <option value="">Seleccionar lector</option>
+
+                        {% for lector in lectores %}
+                        <option value="{{ lector.id_lector }}">
+                            {{ lector.nombre }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-success mt-4"
+                    {% if not libros or not lectores %}disabled{% endif %}>
+                Registrar préstamo
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- HISTORIAL DE PRÉSTAMOS -->
+<div class="card shadow-sm">
+
+    <div class="card-header">
+        <h5 class="mb-0">Historial de préstamos</h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover align-middle">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Libro</th>
+                        <th>Lector</th>
+                        <th>Fecha de préstamo</th>
+                        <th>Fecha de devolución</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for prestamo in prestamos %}
+
+                    <tr>
+                        <td>{{ prestamo.id_prestamo }}</td>
+
+                        <td>{{ prestamo.libro.titulo }}</td>
+
+                        <td>{{ prestamo.lector.nombre }}</td>
+
+                        <td>
+                            {{ prestamo.fecha_prestamo.strftime('%d/%m/%Y %H:%M') }}
+                        </td>
+
+                        <td>
+                            {% if prestamo.fecha_devolucion %}
+                                {{ prestamo.fecha_devolucion.strftime('%d/%m/%Y %H:%M') }}
+                            {% else %}
+                                Pendiente
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if prestamo.fecha_devolucion %}
+                                <span class="badge bg-success">
+                                    Devuelto
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    Vigente
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+
+                                {% if not prestamo.fecha_devolucion %}
+
+                                <!-- EDITAR -->
+                                <a href="{{ url_for('prestamos.editar',
+                                           id_prestamo=prestamo.id_prestamo) }}"
+                                   class="btn btn-warning btn-sm">
+                                    Editar
+                                </a>
+
+                                <!-- DEVOLVER -->
+                                <form method="POST"
+                                      action="{{ url_for('prestamos.devolver',
+                                              id_prestamo=prestamo.id_prestamo) }}"
+                                      onsubmit="return confirm('¿Confirmar devolución del libro?')">
+
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm">
+                                        Devolver
+                                    </button>
+
+                                </form>
+
+                                {% endif %}
+
+                                <!-- ELIMINAR -->
+                                <form method="POST"
+                                      action="{{ url_for('prestamos.eliminar',
+                                              id_prestamo=prestamo.id_prestamo) }}"
+                                      onsubmit="return confirm('¿Eliminar este préstamo permanentemente?')">
+
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm">
+                                        Eliminar
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="7"
+                            class="text-center text-muted py-4">
+                            No hay préstamos registrados.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
