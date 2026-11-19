@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Editar Préstamo #{{ prestamo.id_prestamo }}</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Libro</label>
+
+                <select name="id_libro" class="form-select" required>
+                    {% for libro in libros %}
+                    <option value="{{ libro.id_libro }}"
+                        {% if libro.id_libro == prestamo.id_libro %}
+                        selected
+                        {% endif %}>
+                        {{ libro.titulo }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Lector</label>
+
+                <select name="id_lector" class="form-select" required>
+                    {% for lector in lectores %}
+                    <option value="{{ lector.id_lector }}"
+                        {% if lector.id_lector == prestamo.id_lector %}
+                        selected
+                        {% endif %}>
+                        {{ lector.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                Guardar cambios
+            </button>
+
+            <a href="{{ url_for('prestamos.index') }}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

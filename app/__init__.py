@@ -36,10 +36,12 @@ db = SQLAlchemy(app)
 from app.routes.home import home_bp
 from app.routes.libros import libros_bp
 from app.routes.lectores import lectores_bp
+from app.routes.prestamos import prestamos_bp
 
 app.register_blueprint(home_bp)
 app.register_blueprint(libros_bp)
 app.register_blueprint(lectores_bp)
+app.register_blueprint(prestamos_bp)
 
 with app.app_context():
     try:
